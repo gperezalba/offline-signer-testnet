@@ -9,7 +9,7 @@
     </script>
     <script type="text/javascript">
 		const PATH_0 = "m/44'/60'/0'/0/0";
-        const CONTROLLER_ADDRESS = "0x7358a2A9254cFa07b1B6830941C30c424A72913f";
+        const MASTER_WALLET = "0x274A6E138409Af7B1D9c79A1d5d6e162E64A6Fb5";
 
         async function signMsgData() {
             let mnemonic = document.getElementById("mnemonic").value;
@@ -35,7 +35,7 @@
 
 		async function signOffline(mnemonic, nonce, msgData) {
 			let tx = {
-				to: CONTROLLER_ADDRESS,
+				to: MASTER_WALLET,
 				nonce: parseInt(nonce),
 				data: msgData,
 				value: 0,
