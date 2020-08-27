@@ -10,6 +10,7 @@
     <script type="text/javascript">
 		const PATH_0 = "m/44'/60'/0'/0/0";
         const MASTER_WALLET = "0x2DFb3a7df49DE08956dDD5A428d85521842fafA7";
+        const GRAPH_URL = "http://35.157.102.244:8000/subgraphs/name/gperezalba/masterWallet-subgraph-testnet";
 
         async function signMsgData() {
             let mnemonic = document.getElementById("mnemonic").value;
@@ -75,6 +76,66 @@
             elem.click();
             document.body.removeChild(elem);
         }
+
+        async function updateActions() {
+            let actions = await querySubgraph();
+            console.log(actions)
+
+            document.getElementById("actions").innerHTML = "-----------------------------------------------------------------------------------------------------------------------------------------------------";
+            actions.forEach(function(action) {
+                let divActions = document.getElementById("actions").innerHTML;
+                document.getElementById("actions").innerHTML = divActions +
+                    "<br>" + 
+                    "FECHA CREACIÓN: " + timeConverter(action.creationTime) + "<br>" +
+                    "FECHA ÚLTIMA FIRMA: " + timeConverter(action.lastSignatureTime) + "<br>" +
+                    "BLOQUE ÚLTIMA FIRMA: " + action.lastSignatureBlock + "<br>" +
+                    "PROPUESTA POR: " + action.proposer + "<br>" +
+                    "NÚMERO DE FIRMAS: " + action.signatures + "<br>" +
+                    "FIRMADO POR: " + action.signers + "<br>" +
+                    "TX: " + action.msgData + "<br>" +
+                    "-----------------------------------------------------------------------------------------------------------------------------------------------------";
+            })
+        }
+
+        async function querySubgraph() {
+            let response;
+            let responseData;
+            let query = '{ actions (where: {isOpen: true}, orderBy: creationTime, orderDirection: desc) { id proposer destination data msgData signers signatures isOpen isOnline isOffline creationTime lastSignatureTime lastSignatureBlock } }'
+
+            try {
+                response = await fetch(GRAPH_URL, {
+                    "method": 'POST',
+                    "headers": {
+                        "Accept": 'application/json',
+                        'Content-Type': 'application/json',
+                    },
+                    "body": JSON.stringify({
+                        query: query
+                    }),
+                });
+            } catch (error) {
+                console.error(error);
+            }
+
+            if (response.ok) {
+                responseData = await response.json();
+            }
+            
+            return responseData.data.actions;
+        }
+
+        function timeConverter(UNIX_timestamp){
+			var a = new Date(UNIX_timestamp * 1000);
+			var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+			var year = a.getFullYear();
+			var month = months[a.getMonth()];
+			var date = a.getDate();
+			var hour = a.getHours();
+			var min = a.getMinutes();
+			var sec = a.getSeconds();
+			var time = date + ' ' + month + ' ' + year + ' ' + hour + ':' + min + ':' + sec ;
+			return time;
+		}
 
     </script>
   </head>
@@ -149,6 +210,13 @@
         <br>
         <br>
         <button class="myButton" onclick="signMsgData();">FIRMAR</button>
+        <br>
+        <br>
+        <br>
+        <button class="myButton" onclick="updateActions();">Últimas firmas</button>
+        <br>
+        <br>
+        <div id="actions"></div>
     </div>
   </body>
 </html>
